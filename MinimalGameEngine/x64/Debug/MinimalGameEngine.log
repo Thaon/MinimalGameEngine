@@ -1,0 +1,9 @@
+﻿  MinimalGameEngine.cpp
+d:\projects\minimalgameengine\minimalgameengine\engine.h(66): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(141): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(145): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(149): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(153): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(342): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\engine.h(342): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+  MinimalGameEngine.vcxproj -> D:\PROJECTS\MinimalGameEngine\x64\Debug\MinimalGameEngine.exe
