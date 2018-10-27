@@ -7,26 +7,81 @@ static const int ENTITYSIZE = 32;
 class Entity
 {
 public:
+	Entity(std::string Name, float X, float Y, SDL_Color col, int sprIndex)
+	{
+		name = Name;
+		x = X;
+		y = Y;
+		color = col;
+		spriteIndex = sprIndex;
+	}
+
 	Entity(std::string Name, float X, float Y, SDL_Color col)
 	{
 		name = Name;
 		x = X;
 		y = Y;
 		color = col;
+		spriteIndex = -1;
 	}
+	
+	Entity(std::string Name, float X, float Y, int sprIndex)
+	{
+		name = Name;
+		x = X;
+		y = Y;
+		color = *(new SDL_Color());
+		spriteIndex = sprIndex;
+	}
+
+	Entity(std::string Name, SDL_Color col, int sprIndex)
+	{
+		name = Name;
+		color = col;
+		spriteIndex = sprIndex;
+	}
+
 	~Entity();
 
 public:
-	std::string name;
-	float x, y;
-	SDL_Color color;
+	std::string name = "";
+	float x = 0, y = 0;
+	SDL_Color color = *(new SDL_Color());
+	int spriteIndex = -1;
+	Uint16 ID = -1;
 
-	bool TestCollision(float dX, float dY, Entity* collider) //AABB swept collision check
+
+	//properties
+
+	void SetColor(Uint8 r, Uint8 g, Uint8 b)
+	{
+		color = { r, g, b };
+	}
+
+	void SetSprite(int index)
+	{
+		spriteIndex = index;
+	}
+
+	//collision
+
+	bool TestCollision(float dX, float dY, Entity* collider) //AABB swept collision sprite check
 	{
 		if (x + dX + ENTITYSIZE/2 - 3 > collider->x - ENTITYSIZE/2 &&
 			x + dX - ENTITYSIZE/2 + 3 < collider->x + ENTITYSIZE/2 && //x is inside
 			y + dY + ENTITYSIZE/2 > collider->y - ENTITYSIZE/2 &&
 			y + dY - ENTITYSIZE/2 < collider->y + ENTITYSIZE/2) //y is inside
+			return true;
+		else
+			return false;
+	}
+
+	bool TestCollisionBox(float X, float Y, float width, float height, Entity* collider) //AABB swept collision box check
+	{
+		if (X + width > collider->x - ENTITYSIZE / 2 &&
+			X - width < collider->x + ENTITYSIZE / 2 && //x is inside
+			Y + height > collider->y - ENTITYSIZE / 2 &&
+			Y - height < collider->y + ENTITYSIZE / 2) //y is inside
 			return true;
 		else
 			return false;

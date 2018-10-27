@@ -40,6 +40,7 @@ public:
 	int SCREEN_HEIGHT = ENTITYSIZE * 16;
 
 	//scene graph
+	std::vector<Entity*>* entityesDB;
 	std::vector<Entity*>* scene;
 
 	//input
@@ -48,6 +49,9 @@ public:
 
 	//utils
 	float deltaTime = 0;
+
+	//graphics
+	std::vector<SDL_Surface*>* sprites;
 
 	void Log(char* msg)
 	{
@@ -82,9 +86,9 @@ public:
 		}
 	}
 
-	Entity* AddEntity(std::string name, float x, float y, SDL_Color col)
+	Entity* AddEntity(std::string name, float x, float y, SDL_Color col, int spriteindex)
 	{
-		Entity* ent = new Entity(name, x, y, col);
+		Entity* ent = new Entity(name, x, y, col, spriteindex);
 		scene->push_back(ent);
 		return ent;
 	}
@@ -99,6 +103,23 @@ public:
 		return NULL;
 	}
 
+	void SetSpriteForEntity(std::string Name, int index)
+	{
+		//change in the DB
+		for (Entity* e : *entityesDB)
+		{
+			if (e->name == Name)
+				e->SetSprite(index);
+		}
+
+		//change in the scene
+		for (Entity* e : *scene)
+		{
+			if (e->name == Name)
+				e->SetSprite(index);
+		}
+	}
+
 	void QuitGame()
 	{
 		isRunning = false;
@@ -107,11 +128,11 @@ public:
 	void LoadNextLevel()
 	{
 		//check if level exists
-		std::string fName = "resources/" + std::to_string(currentLevel) + ".bmp";
+		std::string fName = "resources/L" + std::to_string(currentLevel) + ".bmp";
 		std::ifstream f(fName.c_str());
 		if (f.good())
 		{
-			std::cout << "Loading " << fName << std::endl;
+			//std::cout << "Loading " << fName << std::endl;
 			currentLevelSurface = IMG_Load(fName.c_str());
 			currentLevel++;
 		}
@@ -124,36 +145,29 @@ public:
 		//we gucci, clear scene
 		scene->clear();
 
-		//call Start
-		startMethod(this);
-
 		//if it does, let's generate a level from it!
 		for (int i = 0; i < currentLevelSurface->w; i++)
 		{
 			for (int j = 0; j < currentLevelSurface->h; j++)
 			{
-
+				//get the pixel color and pass it to the cached ones
 				Uint8 red, green, blue;
 				SDL_GetRGB(getpixel(currentLevelSurface, i, j), currentLevelSurface->format, &red, &green, &blue);
 
-				if (red == 255 && green == 0 && blue == 0)
+				//look in the database for a matching entity and add it to the SceneGraph
+				for (Entity* ent : *entityesDB)
 				{
-					AddEntity("Enemy", i * ENTITYSIZE, j * ENTITYSIZE, { red, green, blue });
-				}
-				if (red == 0 && green == 0 && blue == 255)
-				{
-					AddEntity("Goal", i * ENTITYSIZE, j * ENTITYSIZE, { red, green, blue });
-				}
-				if (red == 64 && green == 64 && blue == 64)
-				{
-					AddEntity("Wall", i * ENTITYSIZE, j * ENTITYSIZE, { red, green, blue });
-				}
-				if (red == 0 && green == 255 && blue == 0)
-				{
-					AddEntity("Player", i * ENTITYSIZE, j * ENTITYSIZE, { red, green, blue });
+					if (ent->color.r == red && ent->color.g == green && ent->color.b == blue)
+					{
+						AddEntity(ent->name, i * ENTITYSIZE, j * ENTITYSIZE, { red, green, blue }, ent->spriteIndex);
+						//std::cout << "Added entity " << ent->name << std::endl;
+					}
 				}
 			}
 		}
+
+		//call Start
+		startMethod(this);
 	}
 
 	int GetCurrentLevel()
@@ -205,6 +219,61 @@ private:
 			return true;
 	}
 
+	void CacheSprites()
+	{
+		int currentSprite = 0;
+		bool finished = false;
+		while (!finished)
+		{
+			//check if sprite exists
+			std::string fName = "resources/S" + std::to_string(currentSprite) + ".bmp";
+			std::ifstream f(fName.c_str());
+			if (f.good())
+			{
+				//std::cout << "Loading " << fName << std::endl;
+
+				//load image in memory
+				SDL_Surface *img = IMG_Load(fName.c_str());
+				//set 255,0,255 as our transparent color
+				SDL_SetColorKey(img, SDL_TRUE, SDL_MapRGB(screenSurface->format, 255, 0, 255));
+				//add to the database
+				sprites->push_back(img);
+				currentSprite++;
+			}
+			else //if it doesn't exist, we completed all the levels
+			{
+				Log("Could not find sprites in the resources folder");
+				finished = true;
+			}
+		}
+		std::cout << "Finished loading sprites, found: " << sprites->size() << std::endl;
+	}
+
+	void PopulateEntityDatabase()
+	{
+		//init db
+		entityesDB = new std::vector<Entity*>();
+		//read Entities file
+		std::string line;
+		std::ifstream myfile("resources/Entities.txt");
+		if (myfile.is_open())
+		{
+			while (getline(myfile, line))
+			{
+				//populate database
+				std::vector<std::string> entityDescriptor = split(line.c_str(), ' ');
+				//an entity is described in the file as: R G B NAME, we build the database from that format
+				entityesDB->push_back(new Entity(entityDescriptor[3], //Name
+					SDL_Color({ (Uint8)stoi(entityDescriptor[0]), (Uint8)stoi(entityDescriptor[1]), (Uint8)stoi(entityDescriptor[2]) }) //color
+					, stoi(entityDescriptor[4]))); //sprite index
+			}
+			std::cout << "Entities database filled with " << entityesDB->size() << " Entities" << std::endl;
+			myfile.close();
+		}
+
+		else std::cout << "Unable to open Entities database file";
+	}
+
 	void AcquireResources()
 	{
 		if (!LoadBackGround())
@@ -219,10 +288,14 @@ private:
 			isRunning = false;
 		}
 
+		PopulateEntityDatabase();
+
+		CacheSprites();
+
 		LoadNextLevel(); //load here?
 	}
 
-
+	//SDL surface pixel access from: http://sdl.beuc.net/sdl.wiki/Pixel_Access
 	Uint32 getpixel(SDL_Surface *surface, int x, int y)
 	{
 		SDL_LockSurface(surface);
@@ -264,6 +337,25 @@ private:
 			return 0;       /* shouldn't happen, but avoids warnings */
 		}
 	}
+
+	//string tokenizer from: https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
+	std::vector<std::string> split(const char *str, char c = ' ')
+	{
+		std::vector<std::string> result;
+
+		do
+		{
+			const char *begin = str;
+
+			while (*str != c && *str)
+				str++;
+
+			result.push_back(std::string(begin, str));
+		} while (0 != *str++);
+
+		return result;
+	}
+
 	//Window management
 
 	bool Init()
@@ -300,6 +392,9 @@ private:
 				//init scene
 				scene = new std::vector<Entity*>();
 
+				//gather sprites
+				sprites = new std::vector<SDL_Surface*>();
+
 				return true;
 			}
 		}
@@ -313,6 +408,11 @@ private:
 		//free surfaces
 		SDL_FreeSurface(background);
 
+		for (SDL_Surface *surf : *sprites)
+		{
+			SDL_FreeSurface(surf);
+		}
+
 		//free font
 		if (font)
 			TTF_CloseFont(font);
@@ -321,8 +421,10 @@ private:
 		//Quit SDL subsystems
 		SDL_Quit();
 
-		//clear scene
+		//clear pointers
 		delete scene;
+		delete entityesDB;
+		delete sprites;
 
 		std::cout << "Game terminated" << std::endl;
 		system("PAUSE");
@@ -339,10 +441,19 @@ private:
 	{
 		for (Entity* e : *scene)
 		{
-			const SDL_Rect Rect = { e->x, e->y, ENTITYSIZE, ENTITYSIZE }; //our entities will always be 32 by 32
-			Uint32 col = SDL_MapRGB(screenSurface->format, e->color.r, e->color.g, e->color.b);
-			SDL_FillRect(screenSurface, &Rect, col);
-			//SDL_BlitSurface(background, 0, screenSurface, 0);
+			//if entity has a sprite, we draw it
+			if (e->spriteIndex != -1)
+			{
+				SDL_Rect rect{ e->x, e->y, ENTITYSIZE, ENTITYSIZE };
+				SDL_BlitScaled(sprites->at(e->spriteIndex), 0, screenSurface, &rect);
+			}
+			//if the entity has no sprite attached to it, render a square
+			else
+			{
+				const SDL_Rect Rect = { e->x, e->y, ENTITYSIZE, ENTITYSIZE }; //our entities will always be 32 by 32
+				Uint32 col = SDL_MapRGB(screenSurface->format, e->color.r, e->color.g, e->color.b);
+				SDL_FillRect(screenSurface, &Rect, col);
+			}
 		}
 
 		//update screen
