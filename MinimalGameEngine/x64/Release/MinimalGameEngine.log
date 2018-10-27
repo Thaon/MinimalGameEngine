@@ -1,0 +1,12 @@
+﻿  stdafx.cpp
+  MinimalGameEngine.cpp
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(70): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(162): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(447): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(447): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(453): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(453): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+  Generating code
+  All 412 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  MinimalGameEngine.vcxproj -> D:\PROJECTS\MinimalGameEngine\x64\Release\MinimalGameEngine.exe
