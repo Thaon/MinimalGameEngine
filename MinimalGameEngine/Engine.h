@@ -14,12 +14,13 @@ static const int RIGHT = 1;
 static const int DOWN = 2;
 static const int LEFT = 3;
 
+//returns the sign of a number
 //from: https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 template <typename T> int sgn(T val) {
 	return (T(0) < val) - (val < T(0));
 }
 
-class Engine; //forward declaration
+class Engine; //forward declaration needed to define callback
 typedef void(*callbackType)(Engine*); //function pointer to make use of code external from engine
 
 class Engine {
@@ -58,11 +59,9 @@ public:
 	std::vector<Mix_Chunk*>* audioClips; //effects can be created using: https://jfxr.frozenfractal.com/
 
 
-	void Log(char* msg)
-	{
-		std::cout << msg << std::endl;
-	}
+	//MAIN ENGINE METHODS, ACCESSIBLE EXTERNALLY-----------------------------------------------------------------------------------------------------------------------------------
 
+	//core engine cycle
 	void Run()
 	{
 		if (Init())
@@ -81,7 +80,6 @@ public:
 				LAST = NOW;
 				NOW = SDL_GetPerformanceCounter();
 				deltaTime = (double)((NOW - LAST) * 100 / (double)SDL_GetPerformanceFrequency()); //modified to 100 from 1000 to make it milliseconds
-				RenderBackground();
 				Render();
 				ReleaseInputs();
 			}
@@ -95,6 +93,7 @@ public:
 		}
 	}
 
+	//adds an entity to the scene
 	Entity* AddEntity(std::string name, float x, float y, SDL_Color col, int spriteindex)
 	{
 		Entity* ent = new Entity(name, x, y, col, spriteindex);
@@ -102,6 +101,7 @@ public:
 		return ent;
 	}
 
+	//returns the first entity with a given name
 	Entity* FindEntity(std::string name)
 	{
 		for (Entity* e : *scene)
@@ -112,6 +112,7 @@ public:
 		return NULL;
 	}
 
+	//sets the sprite of a given entity
 	void SetSpriteForEntity(std::string Name, int index)
 	{
 		//change in the DB
@@ -129,11 +130,13 @@ public:
 		}
 	}
 
+	//exits the core engine loop
 	void QuitGame()
 	{
 		isRunning = false;
 	}
 
+	//loads the next level in the resources folder
 	void LoadNextLevel()
 	{
 		//check if level exists
@@ -179,15 +182,68 @@ public:
 		startMethod(this);
 	}
 
+	//loads a specific level
+	void LoadLevel(int index)
+	{
+		//check if level exists
+		std::string fName = "resources/L" + std::to_string(index) + ".bmp";
+		std::ifstream f(fName.c_str());
+		if (f.good())
+		{
+			//std::cout << "Loading " << fName << std::endl;
+			currentLevelSurface = IMG_Load(fName.c_str());
+		}
+		else //if it doesn't exist, we completed all the levels
+		{
+			Log("Could not load specified level!");
+			isRunning = false;
+			return;
+		}
+		//we gucci, clear scene
+		scene->clear();
+
+		//if it does, let's generate a level from it!
+		for (int i = 0; i < currentLevelSurface->w; i++)
+		{
+			for (int j = 0; j < currentLevelSurface->h; j++)
+			{
+				//get the pixel color and pass it to the cached ones
+				Uint8 red, green, blue;
+				SDL_GetRGB(getpixel(currentLevelSurface, i, j), currentLevelSurface->format, &red, &green, &blue);
+
+				//look in the database for a matching entity and add it to the SceneGraph
+				for (Entity* ent : *entityesDB)
+				{
+					if (ent->color.r == red && ent->color.g == green && ent->color.b == blue)
+					{
+						AddEntity(ent->name, i * ENTITYSIZE, j * ENTITYSIZE, { red, green, blue }, ent->spriteIndex);
+						//std::cout << "Added entity " << ent->name << std::endl;
+					}
+				}
+			}
+		}
+
+		//call Start
+		startMethod(this);
+	}
+
+	//returns the currently loaded level number
 	int GetCurrentLevel()
 	{
 		return currentLevel;
 	}
 
+	//plays the given sound
 	void PlaySound(int index)
 	{
 		if (Mix_PlayChannel(-1, audioClips->at(index), 0) == -1)
 			Log("Could not play sound :(");
+	}
+
+	//logs a text message to the screen
+	void Log(std::string msg)
+	{
+		std::cout << msg << std::endl;
 	}
 
 private:
@@ -213,7 +269,10 @@ private:
 	//delta time calculation
 	float lastTime;
 
-	//Resources utilities
+
+	//RESOURCES CACHING------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	//loads the background
 	bool LoadBackGround()
 	{
 		background = IMG_Load("resources/background.png");
@@ -224,6 +283,7 @@ private:
 			return true;
 	}
 
+	//loads a font, NOTE: fonts are not working at the moment
 	bool LoadFont()
 	{
 		font = TTF_OpenFont("resources/slkscr.ttf", 12);
@@ -234,6 +294,7 @@ private:
 			return true;
 	}
 
+	//loads all the sprites present in the resources folder, they have to be in the bmp format
 	void CacheSprites()
 	{
 		int currentSprite = 0;
@@ -264,31 +325,7 @@ private:
 		std::cout << "Finished loading sprites, found: " << sprites->size() << std::endl;
 	}
 
-	void PopulateEntityDatabase()
-	{
-		//init db
-		entityesDB = new std::vector<Entity*>();
-		//read Entities file
-		std::string line;
-		std::ifstream myfile("resources/Entities.txt");
-		if (myfile.is_open())
-		{
-			while (getline(myfile, line))
-			{
-				//populate database
-				std::vector<std::string> entityDescriptor = split(line.c_str(), ' ');
-				//an entity is described in the file as: R G B NAME, we build the database from that format
-				entityesDB->push_back(new Entity(entityDescriptor[3], //Name
-					SDL_Color({ (Uint8)stoi(entityDescriptor[0]), (Uint8)stoi(entityDescriptor[1]), (Uint8)stoi(entityDescriptor[2]) }) //color
-					, stoi(entityDescriptor[4]))); //sprite index
-			}
-			std::cout << "Entities database filled with " << entityesDB->size() << " Entities" << std::endl;
-			myfile.close();
-		}
-
-		else std::cout << "Unable to open Entities database file";
-	}
-
+	//loads all the audio clips present in the resources folder, they have to be in the wav format
 	void CacheAudioClips()
 	{
 		int currentClip = 0;
@@ -317,6 +354,33 @@ private:
 		std::cout << "Finished loading clips, found: " << audioClips->size() << std::endl;
 	}
 
+	//fills a vector of entities initializing them with the specified color, sprite and name, reading them from the Entities.txt file
+	void PopulateEntityDatabase()
+	{
+		//init db
+		entityesDB = new std::vector<Entity*>();
+		//read Entities file
+		std::string line;
+		std::ifstream myfile("resources/Entities.txt");
+		if (myfile.is_open())
+		{
+			while (getline(myfile, line))
+			{
+				//populate database
+				std::vector<std::string> entityDescriptor = split(line.c_str(), ' ');
+				//an entity is described in the file as: R G B NAME, we build the database from that format
+				entityesDB->push_back(new Entity(entityDescriptor[3], //Name
+					SDL_Color({ (Uint8)stoi(entityDescriptor[0]), (Uint8)stoi(entityDescriptor[1]), (Uint8)stoi(entityDescriptor[2]) }) //color
+					, stoi(entityDescriptor[4]))); //sprite index
+			}
+			std::cout << "Entities database filled with " << entityesDB->size() << " Entities" << std::endl;
+			myfile.close();
+		}
+
+		else std::cout << "Unable to open Entities database file";
+	}
+
+	//loads all the initial resources
 	void AcquireResources()
 	{
 		if (!LoadBackGround())
@@ -340,69 +404,10 @@ private:
 		LoadNextLevel();
 	}
 
-	//SDL surface pixel access from: http://sdl.beuc.net/sdl.wiki/Pixel_Access
-	Uint32 getpixel(SDL_Surface *surface, int x, int y)
-	{
-		SDL_LockSurface(surface);
-		int bpp = surface->format->BytesPerPixel;
-		/* Here p is the address to the pixel we want to retrieve */
-		Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 
-		switch (bpp) {
-		case 1:
-			SDL_UnlockSurface(surface);
-			return *p;
-			break;
+	//SDL MANAGEMENT---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-		case 2:
-			SDL_UnlockSurface(surface);
-			return *(Uint16 *)p;
-			break;
-
-		case 3:
-			if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-			{
-				SDL_UnlockSurface(surface);
-				return p[0] << 16 | p[1] << 8 | p[2];
-			}
-			else
-			{
-				SDL_UnlockSurface(surface);
-				return p[0] | p[1] << 8 | p[2] << 16;
-			}
-			break;
-
-		case 4:
-			SDL_UnlockSurface(surface);
-			return *(Uint32 *)p;
-			break;
-
-		default:
-			SDL_UnlockSurface(surface);
-			return 0;       /* shouldn't happen, but avoids warnings */
-		}
-	}
-
-	//string tokenizer from: https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
-	std::vector<std::string> split(const char *str, char c = ' ')
-	{
-		std::vector<std::string> result;
-
-		do
-		{
-			const char *begin = str;
-
-			while (*str != c && *str)
-				str++;
-
-			result.push_back(std::string(begin, str));
-		} while (0 != *str++);
-
-		return result;
-	}
-
-	//Window management
-
+	//creates the SDL window, initializes audio and the various data vectors
 	bool Init()
 	{
 		//Initialize SDL
@@ -463,6 +468,7 @@ private:
 		}
 	}
 
+	//frees all the cached resources and deletes the vectors in memory
 	void Terminate()
 	{
 		//Destroy window
@@ -500,15 +506,21 @@ private:
 		system("PAUSE");
 	}
 
-	//main engine functions
+
+	//MAIN ENGINE METHODS
+
+	//renders the background
 	void RenderBackground()
 	{
 		//draw background
 		SDL_BlitSurface(background, 0, screenSurface, 0);
 	}
 
+	//renders all the entities on screen after rendering the background
 	void Render()
 	{
+		RenderBackground();
+
 		for (Entity* e : *scene)
 		{
 			//if entity has a sprite, we draw it
@@ -530,11 +542,13 @@ private:
 		SDL_UpdateWindowSurface(window);
 	}
 
+	//calls the external Update method by using function pointers
 	void Update()
 	{
 		updateMethod(this);
 	}
 
+	//handles SDL events and sets the input states in the relative input arrays
 	void ProcessInput()
 	{
 		//Event handler
@@ -605,11 +619,76 @@ private:
 		}
 	}
 
+	//releases inputs, this is useful for determining if a key is pressed or held
 	void ReleaseInputs()
 	{
 		inputPressed[UP] = false;
 		inputPressed[RIGHT] = false;
 		inputPressed[DOWN] = false;
 		inputPressed[LEFT] = false;
+	}
+
+
+	//UTILITIES--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	//SDL surface pixel access from: http://sdl.beuc.net/sdl.wiki/Pixel_Access
+	Uint32 getpixel(SDL_Surface *surface, int x, int y)
+	{
+		SDL_LockSurface(surface);
+		int bpp = surface->format->BytesPerPixel;
+		/* Here p is the address to the pixel we want to retrieve */
+		Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+		switch (bpp) {
+		case 1:
+			SDL_UnlockSurface(surface);
+			return *p;
+			break;
+
+		case 2:
+			SDL_UnlockSurface(surface);
+			return *(Uint16 *)p;
+			break;
+
+		case 3:
+			if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+			{
+				SDL_UnlockSurface(surface);
+				return p[0] << 16 | p[1] << 8 | p[2];
+			}
+			else
+			{
+				SDL_UnlockSurface(surface);
+				return p[0] | p[1] << 8 | p[2] << 16;
+			}
+			break;
+
+		case 4:
+			SDL_UnlockSurface(surface);
+			return *(Uint32 *)p;
+			break;
+
+		default:
+			SDL_UnlockSurface(surface);
+			return 0;       /* shouldn't happen, but avoids warnings */
+		}
+	}
+
+	//string tokenizer from: https://stackoverflow.com/questions/53849/how-do-i-tokenize-a-string-in-c
+	std::vector<std::string> split(const char *str, char c = ' ')
+	{
+		std::vector<std::string> result;
+
+		do
+		{
+			const char *begin = str;
+
+			while (*str != c && *str)
+				str++;
+
+			result.push_back(std::string(begin, str));
+		} while (0 != *str++);
+
+		return result;
 	}
 };
