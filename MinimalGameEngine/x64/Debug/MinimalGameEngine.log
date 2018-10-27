@@ -1,8 +1,11 @@
 ﻿  MinimalGameEngine.cpp
-d:\projects\minimalgameengine\minimalgameengine\engine.h(70): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\engine.h(162): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\engine.h(447): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
-d:\projects\minimalgameengine\minimalgameengine\engine.h(447): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\engine.h(453): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
-d:\projects\minimalgameengine\minimalgameengine\engine.h(453): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(171): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(517): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\engine.h(517): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\engine.h(523): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\engine.h(523): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\minimalgameengine.cpp(7): warning C4305: 'initializing': truncation from 'double' to 'float'
+d:\projects\minimalgameengine\minimalgameengine\minimalgameengine.cpp(23): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\minimalgameengine.cpp(74): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\minimalgameengine.cpp(85): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
   MinimalGameEngine.vcxproj -> D:\PROJECTS\MinimalGameEngine\x64\Debug\MinimalGameEngine.exe

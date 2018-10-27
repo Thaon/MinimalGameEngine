@@ -3,6 +3,7 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_mixer.h>
 #include <SDL/SDL_ttf.h>
 #include <vector>
 #include "Entity.h"
@@ -48,10 +49,14 @@ public:
 	bool inputPressed[4];
 
 	//utils
-	float deltaTime = 0;
+	double deltaTime = 0;
 
 	//graphics
 	std::vector<SDL_Surface*>* sprites;
+
+	//music and sounds
+	std::vector<Mix_Chunk*>* audioClips; //effects can be created using: https://jfxr.frozenfractal.com/
+
 
 	void Log(char* msg)
 	{
@@ -65,15 +70,19 @@ public:
 			isRunning = true;
 			AcquireResources();
 
+			//improved delta time calculation from: https://gamedev.stackexchange.com/questions/110825/how-to-calculate-delta-time-with-sdl/123957
+			Uint64 NOW = SDL_GetPerformanceCounter();
+			Uint64 LAST = 0;
+
 			while (isRunning)
 			{
-				float time = SDL_GetTicks() / 1000.0; //SDL_GetTicks returns a Uint32 representing the number of milliseconds between frames, needs to be transposed in actual fractions of seconds
-				deltaTime = time - lastTime;
 				ProcessInput();
 				Update();
+				LAST = NOW;
+				NOW = SDL_GetPerformanceCounter();
+				deltaTime = (double)((NOW - LAST) * 100 / (double)SDL_GetPerformanceFrequency()); //modified to 100 from 1000 to make it milliseconds
 				RenderBackground();
 				Render();
-				lastTime = time;
 				ReleaseInputs();
 			}
 
@@ -175,6 +184,12 @@ public:
 		return currentLevel;
 	}
 
+	void PlaySound(int index)
+	{
+		if (Mix_PlayChannel(-1, audioClips->at(index), 0) == -1)
+			Log("Could not play sound :(");
+	}
+
 private:
 	//The window we'll be rendering to
 	SDL_Window* window = NULL;
@@ -274,6 +289,34 @@ private:
 		else std::cout << "Unable to open Entities database file";
 	}
 
+	void CacheAudioClips()
+	{
+		int currentClip = 0;
+		bool finished = false;
+		while (!finished)
+		{
+			//check if sound exists
+			std::string fName = "resources/A" + std::to_string(currentClip) + ".wav";
+			std::ifstream f(fName.c_str());
+			if (f.good())
+			{
+				//std::cout << "Loading " << fName << std::endl;
+
+				//load clip in memory
+				Mix_Chunk *chunk = Mix_LoadWAV(fName.c_str());
+				//add to the database
+				audioClips->push_back(chunk);
+				currentClip++;
+			}
+			else //if it doesn't exist, we completed all the levels
+			{
+				Log("Could not find audio clips in the resources folder");
+				finished = true;
+			}
+		}
+		std::cout << "Finished loading clips, found: " << audioClips->size() << std::endl;
+	}
+
 	void AcquireResources()
 	{
 		if (!LoadBackGround())
@@ -292,7 +335,9 @@ private:
 
 		CacheSprites();
 
-		LoadNextLevel(); //load here?
+		CacheAudioClips();
+		
+		LoadNextLevel();
 	}
 
 	//SDL surface pixel access from: http://sdl.beuc.net/sdl.wiki/Pixel_Access
@@ -361,7 +406,7 @@ private:
 	bool Init()
 	{
 		//Initialize SDL
-		if (SDL_Init(SDL_INIT_VIDEO) < 0)
+		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 		{
 			std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
 			return false;
@@ -389,10 +434,28 @@ private:
 				//Initialize fonts
 				TTF_Init();
 
-				//init scene
+				//init audio
+				if (SDL_Init(SDL_INIT_AUDIO) < 0)
+				{
+					Log("Error initialising SDL mixer");
+					return false;
+				}
+				else
+				{
+					if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+					{
+						Log("Error creating audio channels");
+						return false;
+					}
+				}
+
+				//init clips vector
+				audioClips = new std::vector<Mix_Chunk*>();
+
+				//init scene vector
 				scene = new std::vector<Entity*>();
 
-				//gather sprites
+				//init sprites vector
 				sprites = new std::vector<SDL_Surface*>();
 
 				return true;
@@ -418,8 +481,15 @@ private:
 			TTF_CloseFont(font);
 		font = 0;
 
+		//free audio
+		for (Mix_Chunk* chunk : *audioClips)
+		{
+			Mix_FreeChunk(chunk);
+		}
+
 		//Quit SDL subsystems
 		SDL_Quit();
+		Mix_CloseAudio();
 
 		//clear pointers
 		delete scene;
