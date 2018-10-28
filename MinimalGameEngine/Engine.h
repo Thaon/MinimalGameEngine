@@ -112,6 +112,12 @@ public:
 		return NULL;
 	}
 
+	//returns all the entities by value
+	std::vector<Entity*>* GetScene()
+	{
+		return scene;
+	}
+
 	//sets the sprite of a given entity
 	void SetSpriteForEntity(std::string Name, int index)
 	{

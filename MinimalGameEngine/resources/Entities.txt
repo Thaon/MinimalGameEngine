@@ -1,0 +1,4 @@
+64 64 64 Wall 1
+255 0 0 Spikes 2
+0 255 0 Player 0
+0 0 255 Exit 3

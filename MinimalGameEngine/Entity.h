@@ -4,7 +4,7 @@
 
 static const int ENTITYSIZE = 32;
 
-class Entity
+struct Entity
 {
 public:
 	Entity(std::string Name, float X, float Y, SDL_Color col, int sprIndex)
@@ -41,8 +41,6 @@ public:
 		spriteIndex = sprIndex;
 	}
 
-	~Entity();
-
 public:
 	std::string name = "";
 	float x = 0, y = 0;
@@ -52,6 +50,12 @@ public:
 
 
 	//properties
+
+	void Move(float dX, float dY)
+	{
+		x += dX;
+		y += dY;
+	}
 
 	void SetColor(Uint8 r, Uint8 g, Uint8 b)
 	{
