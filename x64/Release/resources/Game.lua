@@ -3,7 +3,7 @@ local player
 local exit
 
 local speed = 1
-local jumpSpeed = -7
+local jumpSpeed = -1.2
 local gravity = .3
 local gSpeed = 0;
 
@@ -60,7 +60,7 @@ function Update(ME)
 
 		--jump if grounded
 		if UpPressed then
-			gSpeed = jumpSpeed * delta
+			gSpeed = jumpSpeed
 			grounded = false
 			PlaySound(0)
 		end

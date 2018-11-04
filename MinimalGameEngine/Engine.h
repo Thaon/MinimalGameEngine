@@ -62,6 +62,8 @@ public:
 
 	//graphics
 	std::vector<SDL_Surface*>* sprites;
+	std::vector<SDL_Surface*>* backgrounds;
+	int selectedBackground = 0;
 
 	//music and sounds
 	std::vector<Mix_Chunk*>* audioClips; //effects can be created using: https://jfxr.frozenfractal.com/
@@ -170,6 +172,13 @@ public:
 		}
 
 		delete temp;
+	}
+
+	//sets the background
+	void SetBackground(int index)
+	{
+		selectedBackground = index;
+		background = backgrounds->at(selectedBackground);
 	}
 
 	//restarts the scene
@@ -327,14 +336,38 @@ private:
 	//RESOURCES CACHING------------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	//loads the background
-	bool LoadBackGround()
+	bool LoadBackGrounds()
 	{
-		background = IMG_Load("resources/background.png");
+		int currentBkg = 0;
+		bool finished = false;
+		bool found = false;
+		while (!finished)
+		{
+			//check if sprite exists
+			std::string fName = "resources/B" + std::to_string(currentBkg) + ".png";
+			std::ifstream f(fName.c_str());
+			if (f.good())
+			{
+				//std::cout << "Loading " << fName << std::endl;
 
-		if (!background)
-			return false;
-		else
-			return true;
+				//load image in memory
+				SDL_Surface *img = IMG_Load(fName.c_str());
+				//add to the database
+				backgrounds->push_back(img);
+				currentBkg++;
+				found = true;
+			}
+			else //if it doesn't exist, we completed all the levels
+			{
+				if (!found)
+					Log("Could not find backgrounds in the resources folder");
+				finished = true;
+			}
+		}
+		std::cout << "Finished loading backgrounds, found: " << backgrounds->size() << std::endl;
+
+		if (backgrounds->size() != 0)
+			background = backgrounds->at(selectedBackground);
 	}
 
 	//loads a font, NOTE: fonts are not working at the moment
@@ -442,16 +475,14 @@ private:
 	//loads all the initial resources
 	void AcquireResources()
 	{
-		if (!LoadBackGround())
-		{
-			std::cout << "Could not load Background :(" << std::endl;
-		}
 
 		/*if (!LoadFont())
 		{
 			std::cout << "Could not load Font :(" << std::endl;
 			isRunning = false;
 		}*/
+		if (!liteMode)
+			LoadBackGrounds();
 
 		PopulateEntityDatabase();
 
@@ -521,6 +552,7 @@ private:
 
 				//init sprites vector
 				sprites = new std::vector<SDL_Surface*>();
+				backgrounds = new std::vector<SDL_Surface*>();
 
 				return true;
 			}
@@ -534,12 +566,17 @@ private:
 		SDL_DestroyWindow(window);
 
 		//free surfaces
-		SDL_FreeSurface(background);
+		if (backgrounds != nullptr)
+			for (SDL_Surface *surf : *backgrounds)
+			{
+				SDL_FreeSurface(surf);
+			}
 
-		for (SDL_Surface *surf : *sprites)
-		{
-			SDL_FreeSurface(surf);
-		}
+		if (sprites != nullptr)
+			for (SDL_Surface *surf : *sprites)
+			{
+				SDL_FreeSurface(surf);
+			}
 
 		//free font
 		if (font)
@@ -560,6 +597,7 @@ private:
 		delete scene;
 		delete entityesDB;
 		delete sprites;
+		delete backgrounds;
 
 		std::cout << "Game terminated" << std::endl;
 		system("PAUSE");
@@ -572,7 +610,7 @@ private:
 	void RenderBackground()
 	{
 		//draw background
-		if (background != NULL)
+		if (background != NULL && !liteMode)
 			SDL_BlitSurface(background, 0, screenSurface, 0);
 		else
 			SDL_FillRect(screenSurface, NULL, 0);
