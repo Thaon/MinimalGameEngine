@@ -29,6 +29,10 @@ function Update(ME)
 		hSpeed = hSpeed - speed * delta
 	end
 
+	if APressed then
+		RestartLevel()
+	end
+
 	grounded = false
 
 	--check for wall collisions
@@ -37,6 +41,7 @@ function Update(ME)
 			--sides check
 			if player:TestCollisionPoint((EntitySize / 2) * Sign(hSpeed) + hSpeed, 0, wall) then
 				player.x = player.x - hSpeed
+				RemoveEntity(wall)
 
 			--ground check
 			elseif vSpeed >= 0 and player:TestCollisionBox(player.x, player.y + vSpeed, EntitySize / 2 - 3, EntitySize / 2, wall) then

@@ -46,8 +46,13 @@ public:
 	float x = 0, y = 0;
 	SDL_Color color = *(new SDL_Color());
 	int spriteIndex = -1;
-	Uint16 ID = -1;
-
+	int drawOrder = 0;
+	bool visible = true;
+	int currentFrame = 0;
+	bool animate = true;
+	float animationTime = 0;
+	int animationSpeed = 1; //ranges from 0 to 100
+	bool toBeDestroyed = false;
 
 	//properties
 
@@ -105,3 +110,4 @@ private:
 
 };
 
+bool sortOrder(Entity* i, Entity* j) { return (i->drawOrder < j->drawOrder); }

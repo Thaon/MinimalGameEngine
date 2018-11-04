@@ -15,15 +15,13 @@ Blockly.Lua['log'] = function(block) {
 };
 
 Blockly.Lua['start_block'] = function(block) {
-  var statements_name = Blockly.Lua.statementToCode(block, 'NAME');
   // TODO: Assemble Lua into code variable.
-  var code = 'Start = function()\n\nend';
+  var code = 'function Start()\n\nend';
   return code;
 };
 
 Blockly.Lua['update_block'] = function(block) {
-  var statements_name = Blockly.Lua.statementToCode(block, 'NAME');
   // TODO: Assemble Lua into code variable.
-  var code = 'Update = function()\n\nend';
+  var code = 'function Update()\n\nend';
   return code;
 };

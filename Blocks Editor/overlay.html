@@ -3,13 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Blockly Demo: Resizable Blockly (Part 2)</title>
-  <script src="blockly_compressed.js"></script>
-  <script src="blocks_compressed.js"></script>
-  <script src="lua_compressed.js"></script>
-  
-  <script src="workspace.js"></script>
-  <script src="MGE.js"></script>
-  <script src="MGELua.js"></script>
+ 
   <style>
     html, body {
       height: 100%;
@@ -39,8 +33,9 @@
     <button onClick="ExportCode()">Export Code</button>
   </p>
 
-  <div id="blocklyDiv" style="position: absolute">
-
+  <div id="blocklyDiv" style="height: 100%; width: 100%;">
+  </div>
+    
     <xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
       <category name="Logic" colour="#5C81A6">
         <block type="controls_if"></block>
@@ -264,10 +259,14 @@
       <category name="Variables" colour="#A65C81" custom="VARIABLE"></category>
     </xml>
 
-    <script src = "workspace.js"></script>
-
-  </div>
+  <script src="blockly_compressed.js"></script>
+  <script src="blocks_compressed.js"></script>
+  <script src="lua_compressed.js"></script>
   
+  <script src="MGE.js"></script>
+  <script src="MGELua.js"></script>
+  <script src="workspace.js"></script>
+
   <script>
     //window.addEventListener('resize', onresize, false);
     //onresize();

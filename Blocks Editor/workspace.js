@@ -2,7 +2,7 @@
 var blocklyDiv = document.getElementById("blocklyDiv");
 
 var options = { 
-	toolbox : toolbox, 
+	toolbox : document.getElementById('toolbox'), 
 	collapse : true, 
 	comments : true, 
 	disable : false, 
@@ -11,7 +11,7 @@ var options = {
 	horizontalLayout : false, 
 	toolboxPosition : 'start', 
 	css : true, 
-	media : 'media', 
+	media : 'https://blockly-demo.appspot.com/static/media/', 
 	rtl : false, 
 	scrollbars : true, 
 	sounds : true, 
@@ -20,7 +20,7 @@ var options = {
 		spacing : 20, 
 		length : 1, 
 		colour : '#888', 
-		snap : false
+		snap : true
 	}, 
 	zoom : {
 		controls : true, 
@@ -32,5 +32,9 @@ var options = {
 	}
 };
 
+console.log(blocklyDiv, options);
+
 /* Inject your workspace */ 
 var workspace = Blockly.inject(blocklyDiv, options);
+
+console.log(workspace);

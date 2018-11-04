@@ -10,6 +10,7 @@ local gSpeed = 0;
 function Start(ME)
 	player = FindEntity("Player")
 	exit = FindEntity("Exit")
+	AddEntity("Grass", player.x, player.y, 0,0,0, 1)
 end
 
 function Update(ME)
