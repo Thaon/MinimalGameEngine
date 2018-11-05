@@ -1,18 +1,17 @@
 ﻿  MinimalGameEngine.cpp
 d:\projects\minimalgameengine\minimalgameengine\Engine.h(110): warning C4838: conversion from 'int' to 'Uint8' requires a narrowing conversion
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(231): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(276): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(638): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(638): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(643): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(656): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
-d:\projects\minimalgameengine\minimalgameengine\Engine.h(656): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(235): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(280): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(644): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(644): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(649): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(663): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+d:\projects\minimalgameengine\minimalgameengine\Engine.h(663): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 MinimalGameEngine.cpp(9): warning C4305: 'initializing': truncation from 'double' to 'float'
 MinimalGameEngine.cpp(78): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
   Generating code
-d:\projects\minimalgameengine\minimalgameengine\engine.h(371): warning C4715: 'Engine::LoadBackGrounds': not all control paths return a value
-  20 of 4153 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
+  13 of 4153 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     11 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

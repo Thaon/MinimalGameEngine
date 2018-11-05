@@ -44,7 +44,7 @@ Before we start, I would like to reccomend a couple of tools to use alongside th
 
 ---
 
-Now, let&#39;s get into the engine itself. (link-repeat:&quot;Here&quot;)[(open-url: &quot;https://www.youtube.com/watch?v=wsJCbrXgXmw&quot;)]&#39;s a series of video tutorials on how to use the Engine if you&#39;re eager to start!
+Now, let&#39;s get into the engine itself. (link-repeat:&quot;Here&quot;)[(open-url: &quot;https://www.youtube.com/watch?v=wsJCbrXgXmw&amp;list=PLzXS9iZHWqBbZxDVc0d9cYVVGxmzut8Er&quot;)]&#39;s a series of video tutorials on how to use the Engine if you&#39;re eager to start!
 
 [[Written docs? nice!]] you can find a shorter written version if you&#39;re more keen to read.</tw-passagedata><tw-passagedata pid="2" name="Written docs? nice!" tags="" position="1262,526" size="100,100">&lt;img src=&quot;https://cdn1.iconfinder.com/data/icons/office-icons-17/512/ilustracoes_04-12-512.png&quot; class=&quot;center&quot;&gt;
 So, the Micro Game Engine (MGE), is an incredibly lightweight, single screen game engine. It allows for the creation of games from the Gameboy, NES and SNES era.
@@ -75,6 +75,8 @@ Methods available to you are just a few, easy to remember and to use, here they 
 &lt;h2&gt;Utility:&lt;/h2&gt;
 * &#39;&#39;Log(txt)&#39;&#39;
 Writes some text to the console below the MGE window.
+* &#39;&#39;Clear()&#39;&#39;
+Clears the console.
 * &#39;&#39;Sign(number)&#39;&#39;
 Returns the sign of a number.
 * &#39;&#39;Quit()&#39;&#39;
@@ -91,6 +93,8 @@ Loads a specific level from file.
 Restarts the current level.
 * &#39;&#39;GetScene()&#39;&#39;
 returns a list containing all the Entities present in the loaded level.
+* &#39;&#39;SetBackground(index)&#39;&#39;
+Sets the room background to the one specified with //index//.
 ---
 &lt;h2&gt;Entities Management:&lt;/h2&gt;
 * &#39;&#39;AddEntity(name, X, Y, R, G, B, spriteIndex)&#39;&#39;

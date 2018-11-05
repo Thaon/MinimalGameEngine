@@ -179,6 +179,10 @@ public:
 	{
 		selectedBackground = index;
 		background = backgrounds->at(selectedBackground);
+
+		if (liteMode)
+			if (index > 2)
+				background = NULL;
 	}
 
 	//restarts the scene
@@ -475,19 +479,19 @@ private:
 	//loads all the initial resources
 	void AcquireResources()
 	{
+		if (liteMode)
+			Log("In the Lite version, you can only have 5 non animated Sprites and 2 Backgrounds");
 
 		/*if (!LoadFont())
 		{
 			std::cout << "Could not load Font :(" << std::endl;
 			isRunning = false;
 		}*/
-		if (!liteMode)
-			LoadBackGrounds();
+		LoadBackGrounds();
 
 		PopulateEntityDatabase();
 
-		if (!liteMode)
-			CacheSprites();
+		CacheSprites();
 
 		CacheAudioClips();
 		
@@ -610,7 +614,7 @@ private:
 	void RenderBackground()
 	{
 		//draw background
-		if (background != NULL && !liteMode)
+		if (background != NULL)
 			SDL_BlitSurface(background, 0, screenSurface, 0);
 		else
 			SDL_FillRect(screenSurface, NULL, 0);
@@ -628,26 +632,29 @@ private:
 		{
 			if (e->visible) //only draw visible objects
 			{
-				//if entity has a sprite, we draw it
-				if (e->spriteIndex != -1 && !liteMode)
+				if ((liteMode && e->spriteIndex < 5) || !liteMode)
 				{
-					int squareLength = sprites->at(e->spriteIndex)->h;
-					int frames = sprites->at(e->spriteIndex)->w / squareLength;
-					int xOffset = squareLength * e->currentFrame;
-					SDL_Rect from{ xOffset, 0, squareLength, squareLength };
-					SDL_Rect rect{ e->x, e->y, ENTITYSIZE, ENTITYSIZE };
-					SDL_BlitScaled(sprites->at(e->spriteIndex), &from, screenSurface, &rect);
-					
-					if (e->animate) //if animating, update the frame to the next one
+					//if entity has a sprite, we draw it
+					if (e->spriteIndex != -1)
 					{
-						e->animationTime += e->animationSpeed * deltaTime;
-						if (e->animationTime > 100)
+						int squareLength = sprites->at(e->spriteIndex)->h;
+						int frames = sprites->at(e->spriteIndex)->w / squareLength;
+						int xOffset = squareLength * e->currentFrame;
+						SDL_Rect from{ xOffset, 0, squareLength, squareLength };
+						SDL_Rect rect{ e->x, e->y, ENTITYSIZE, ENTITYSIZE };
+						SDL_BlitScaled(sprites->at(e->spriteIndex), &from, screenSurface, &rect);
+
+						if (e->animate && !liteMode) //if animating, update the frame to the next one
 						{
-							e->animationTime = 0;
-							e->currentFrame++;
+							e->animationTime += e->animationSpeed * deltaTime;
+							if (e->animationTime > 100)
+							{
+								e->animationTime = 0;
+								e->currentFrame++;
+							}
+							if (e->currentFrame >= frames)
+								e->currentFrame = 0;
 						}
-						if (e->currentFrame >= frames)
-							e->currentFrame = 0;
 					}
 				}
 				//if the entity has no sprite attached to it or the engine is running the Lite version, render a square
